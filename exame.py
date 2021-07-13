@@ -30,8 +30,7 @@ class NeuralODE():
         weights.append([self.third_layer['W'],self.third_layer['b']])
         return weights
 
-#Inicializando os pesos da rede neural
-def initial_weigth(scale, layer_sizes, rs=npr.RandomState(42)):
+def initial_weigth( layer_sizes, rs=npr.RandomState(42)):
     return [(rs.randn(insize, outsize) * 0.1,   
              rs.randn(outsize) * 0.1)           
             for insize, outsize in zip(layer_sizes[:-1], layer_sizes[1:])]
@@ -39,7 +38,7 @@ def initial_weigth(scale, layer_sizes, rs=npr.RandomState(42)):
 
 # Criando a Rede Neural
 neural_network=NeuralODE()
-weights = initial_weigth(layer_sizes=[1, 5,5, 1])
+weights = initial_weigth( layer_sizes=[1, 5, 5, 1])
 
 #FeedFoward da Rede Neural
 def y(weights, inputs):
@@ -56,7 +55,7 @@ def y(weights, inputs):
 # Parâmetros a serem otimizados pela Rede Neural.
 # Tanto os pesos de estimação como a energia do sistema
 # devem ser estimados.
-params = {'w': weights, 'E':1.5}
+params = {'w': weights, 'E':0.3}
 
 
 #####################################################
@@ -73,7 +72,7 @@ params = {'w': weights, 'E':1.5}
 # Configuração inicial para o sistema.
 # a,b : pontos extremos (condição de contorno)
 a=0   
-b=2
+b=1
 
 
 # Definindo os Pontos da Malha
@@ -90,7 +89,8 @@ V=potential(x)
 # Definindo a função de callback
 def callback(params, step, g):
     if step % 1000 == 0:
-        print("Iteração {0:4d} / Função Custo: {1}".format(step,loss_function(params, step)))
+        print("Iteração {0:4d} / Função Custo: {1}".format(step,
+                                                      loss_function(params, step)))
 
 # Definindo espaços para armazenar variáveis a serem plotadas
 pred=[]
@@ -130,6 +130,11 @@ def loss_function(params, step):
 #Otimizando a Rede Neural
 params = adam(grad(loss_function), params,step_size=0.001, num_iters=7001, callback=callback)
 
+# E=params[1]
+
+# print("O chute inicial para a energia foi de 0.2 Hartree. A energia final obtida foi E={0.4f} Hartree.\n".format(E))
+
+
 # Plotando o gráfico do custo
 fig=plt.figure(figsize=(10, 8))
 plt.plot(loss_by_time)
@@ -150,7 +155,7 @@ plt.plot(x,pred[9][0],label=str(pred[9][1])+' Épocas')
 plt.plot(x,pred[11][0],label=str(pred[11][1])+' Épocas')
 plt.plot(x,pred[13][0],label=str(pred[13][1])+' Épocas')
 plt.plot(x,pred[15][0],label=str(pred[15][1])+' Épocas')
-plt.plot(x, np.sqrt(2/2)*np.sin(np.pi*x/2), 'r--', label='Solução Analítica')
+plt.plot(x, np.sqrt(2)*np.sin(np.pi*x), 'r--', label='Solução Analítica')
 plt.ylabel(r'$\psi$(x) (em raios de Bohr)')
 plt.xlabel(r'x (em raios de Bohr)')
 plt.legend()
